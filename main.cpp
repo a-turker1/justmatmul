@@ -1,13 +1,14 @@
 #include <iostream>
 #include "matmul.h"
-#include "allocator.h"
+#include "timeutils.h"
 #include "matrix.h"
 
 int main(){
-    float *src = allocate(3,2);
-    Matrix A(10,5);
-    Matrix B(5,7);
-    Matrix out(10,7);
+    Matrix A(128,64);
+    Matrix B(64,128);
+    Matrix out(128,128);
     naive_matmul(A, B, out);
-    std::cout << out << std::endl;
+    auto flops = calculate_gflops(A,B,out, naive_matmul);
+    std::cout << flops << std::endl;
+
 }
