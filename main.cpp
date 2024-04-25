@@ -3,12 +3,11 @@
 #include "timeutils.h"
 #include "matrix.h"
 
-int main(){
-    Matrix A(128,64);
-    Matrix B(64,128);
-    Matrix out(128,128);
-    naive_matmul(A, B, out);
-    auto flops = calculate_gflops(A,B,out, naive_matmul);
-    std::cout << flops << std::endl;
-
+int main()
+{
+    Matrix A(1024, 1024);
+    Matrix B(1024, 1024);
+    Matrix out(1024, 1024);
+    auto gflops = calculate_gflops(A, B, out, neon_matmul);
+    std::cout << "Gflops: " << gflops << std::endl;
 }
