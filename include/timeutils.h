@@ -4,7 +4,10 @@
 template <typename Op>
 double calculate_gflops(Matrix& A, Matrix& B, Matrix& out, Op op){
     double elapsed_time = 0;
-    for (size_t i = 0; i < 5; i++)
+    for(size_t i = 0; i < 5; i++)
+        op(A, B, out);
+
+    for (size_t i = 0; i < 20; i++)
     {
         auto start_time = std::chrono::high_resolution_clock::now();
         op(A, B, out);
@@ -12,7 +15,7 @@ double calculate_gflops(Matrix& A, Matrix& B, Matrix& out, Op op){
         auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
         elapsed_time += duration.count();
     }
-    elapsed_time /= 10.0;
+    elapsed_time /= 20.0;
     
     int M = A.cols;
     int N = A.rows;
