@@ -13,7 +13,7 @@ struct Matrix
         base = new float[rows_ * cols_];
         for (size_t i = 0; i < rows_*cols_; i++)
         {
-            base[i] = 1.0f;
+            base[i] = 1;
         }
         
     }
@@ -31,6 +31,19 @@ struct Matrix
     float *data()
     {
         return base;
+    }
+
+    Matrix transpose(){
+        Matrix transposed = Matrix(cols, rows);
+        auto data = transposed.data();
+        for (size_t i = 0; i < cols*rows; i++)
+        {
+            int _row = i/cols;
+            int _col = i%cols;
+            data[rows*_col + _row] = base[i];
+        }
+        return transposed;
+
     }
 
     friend std::ostream &operator<<(std::ostream &os, const Matrix &mat)

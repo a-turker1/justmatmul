@@ -7,11 +7,12 @@
 
 int main()
 {
-    Matrix A(8, 12);
-    Matrix B(8, 8);
-    Matrix out(12, 8);
+    Matrix A(36, 64);
+    Matrix B(64, 64);
+    Matrix out(36, 64);
 
-    auto gflops = calculate_gflops(A, B, out, neon_matmul);
+    auto At = A.transpose();
+
+    auto gflops = calculate_gflops(At, B, out, neon_matmul);
     std::cout << "Gflops: " << gflops << std::endl;
-    std::cout << out << std::endl;
 }
