@@ -33,16 +33,33 @@ void neon_matmul(Matrix &a, Matrix &b, Matrix &out)
     float *bData = b.data();
     float *outData = out.data();
 
-    for (size_t m = 0; m < M; m += 12)
+    for (int m = 0; m < M - 11; m +=12)
     {
-        for (size_t k = 0; k < K; k += 8)
+        for (int k = 0; k < K - 7; k +=8)
         {
             matmul_12x8_micro_kernel(N, aData + m, bData + k, outData + m * out.cols + k, a.cols, b.cols, out.cols);
         }
     }
-}
 
-/*
-Applies operation A@B=OUT.
-Expected A (mxn) transposed, B(NXK) row major and out (MXK) row major.
-*/
+    int remaining_M = M % 12;
+    int remaining_K = K % 8;
+
+
+    for (size_t m = 0; m < M-3; m += 4)
+    {
+        for (size_t k = K - remaining_K; k < K-3; k += 4)
+        {
+            matmul_4x4_micro_kernel(N, aData + m, bData + k, outData + m * out.cols + k, a.cols, b.cols, out.cols);
+        }
+    }
+
+    for (size_t m = M - remaining_M; m < M-3; m += 4)
+    {
+        for (size_t k = 0; k < K - remaining_K -3; k += 4)
+        {
+            matmul_4x4_micro_kernel(N, aData + m, bData + k, outData + m * out.cols + k, a.cols, b.cols, out.cols);
+        }
+    }
+
+    
+}

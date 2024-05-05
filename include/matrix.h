@@ -7,7 +7,7 @@ struct Matrix
     float *base;
 
     // Constructor to initialize the matrix with given dimensions
-    Matrix(int rows_, int cols_) : cols(cols_), rows(rows_)
+    Matrix(int rows_, int cols_) : rows(rows_), cols(cols_)
     {
         // Allocate memory for the matrix data
         base = new float[rows_ * cols_];
