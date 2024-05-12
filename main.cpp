@@ -7,9 +7,9 @@
 
 int main()
 {
-    Matrix A(224, 224);
-    Matrix B(224, 224);
-    Matrix out(224, 224);
+    Matrix A(216, 224);
+    Matrix B(224, 216);
+    Matrix out(216, 216);
 
     auto At = A.transpose();
 

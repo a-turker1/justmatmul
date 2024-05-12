@@ -120,6 +120,219 @@ void matmul_12x8_micro_kernel(int N, float *aData, float *bData, float *outData,
     vst1q_f32(outData + 11 * s_out + 4, res24);
 }
 
+void matmul_12x8_micro_kernel_asmb(int N, float *aData, float *bData, float *outData, long s_a, long s_b, long s_out){
+    s_a *= 4;
+    s_b *= 4;
+    s_out *= 4;
+    __asm__ volatile
+    (
+        ""
+        "dup v7.4s, wzr                 \n\t"
+        "ldr x0, %[aaddr]               \n\t"
+        "dup v8.4s, wzr                 \n\t"
+        "ldr x1, %[baddr]               \n\t"
+        "dup v9.4s, wzr                 \n\t"
+        "ldr x2, %[outaddr]             \n\t"
+        "dup v10.4s, wzr                \n\t"
+        "ldr x3, %[n]                  \n\t"
+        "dup v11.4s, wzr                \n\t"
+        "ldr x4, %[s_a]                  \n\t"
+        "dup v12.4s, wzr                \n\t"
+        "ldr x5, %[s_b]                  \n\t"
+        "dup v13.4s, wzr                \n\t"
+        "ldr x6, %[s_out]                  \n\t"
+        "dup v14.4s, wzr                \n\t"
+        "ldp q0, q1, [x0]               \n\t"
+        "dup v15.4s, wzr                \n\t"
+        "ldr q2, [x0, #32]              \n\t"
+        "dup v16.4s, wzr                \n\t"
+        "ldp q3, q4, [x1]               \n\t"
+        "dup v17.4s, wzr                \n\t"
+        "add x0, x0, x4                \n\t"
+        "dup v18.4s, wzr                \n\t"
+        "add x1, x1, x5                \n\t"
+        "dup v19.4s, wzr                \n\t"
+        "dup v20.4s, wzr                \n\t"
+        "dup v21.4s, wzr                \n\t"
+        "dup v22.4s, wzr                \n\t"
+        "dup v23.4s, wzr                \n\t"
+        "dup v23.4s, wzr                \n\t"
+        "dup v24.4s, wzr                \n\t"
+        "dup v25.4s, wzr                \n\t"
+        "dup v26.4s, wzr                \n\t"
+        "dup v27.4s, wzr                \n\t"
+        "dup v28.4s, wzr                \n\t"
+        "dup v29.4s, wzr                \n\t"
+        "dup v30.4s, wzr                \n\t"
+        "                               \n\t"
+        "main_iter%=:                     \n\t"
+        "ldp q5, q6, [x1]                \n\t"
+        "add x1, x1, x5                \n\t"
+        "fmla.4s v7, v3, v0[0]          \n\t"
+        "fmla.4s v8, v4, v0[0]          \n\t"
+        "fmla.4s v9, v3, v0[1]          \n\t"
+        "fmla.4s v10, v4, v0[1]         \n\t"
+        "fmla.4s v11, v3, v0[2]         \n\t"
+        "fmla.4s v12, v4, v0[2]         \n\t"
+        "fmla.4s v13, v3, v0[3]         \n\t"
+        "fmla.4s v14, v4, v0[3]         \n\t"
+        "ldr q0, [x0]                   \n\t"
+        "fmla.4s v15, v3, v1[0]          \n\t"
+        "fmla.4s v16, v4, v1[0]          \n\t"
+        "fmla.4s v17, v3, v1[1]          \n\t"
+        "fmla.4s v18, v4, v1[1]         \n\t"
+        "fmla.4s v19, v3, v1[2]         \n\t"
+        "fmla.4s v20, v4, v1[2]         \n\t"
+        "fmla.4s v21, v3, v1[3]         \n\t"
+        "fmla.4s v22, v4, v1[3]         \n\t"
+        "ldr q1, [x0, #16]              \n\t"
+        "fmla.4s v23, v3, v2[0]          \n\t"
+        "fmla.4s v24, v4, v2[0]          \n\t"
+        "fmla.4s v25, v3, v2[1]          \n\t"
+        "fmla.4s v26, v4, v2[1]         \n\t"
+        "fmla.4s v27, v3, v2[2]         \n\t"
+        "fmla.4s v28, v4, v2[2]         \n\t"
+        "fmla.4s v29, v3, v2[3]         \n\t"
+        "fmla.4s v30, v4, v2[3]         \n\t" // Iter 0
+        "ldr q2, [x0, #32]              \n\t"
+        "add x0, x0, x4                 \n\t"
+        "fmla.4s v7, v5, v0[0]          \n\t"
+        "fmla.4s v8, v6, v0[0]          \n\t"
+        "fmla.4s v9, v5, v0[1]          \n\t"
+        "ldp q3, q4, [x1]          \n\t"
+        "add x1, x1, x5                \n\t"
+        "fmla.4s v10, v6, v0[1]         \n\t"
+        "fmla.4s v11, v5, v0[2]         \n\t"
+        "fmla.4s v12, v6, v0[2]         \n\t"
+        "fmla.4s v13, v5, v0[3]         \n\t"
+        "fmla.4s v14, v6, v0[3]         \n\t"
+        "ldr q0, [x0]                   \n\t"
+        "fmla.4s v15, v5, v1[0]          \n\t"
+        "fmla.4s v16, v6, v1[0]          \n\t"
+        "fmla.4s v17, v5, v1[1]          \n\t"
+        "fmla.4s v18, v6, v1[1]         \n\t"
+        "fmla.4s v19, v5, v1[2]         \n\t"
+        "fmla.4s v20, v6, v1[2]         \n\t"
+        "fmla.4s v21, v5, v1[3]         \n\t"
+        "fmla.4s v22, v6, v1[3]         \n\t"
+        "ldr q1, [x0, #16]              \n\t"
+        "fmla.4s v23, v5, v2[0]          \n\t"
+        "fmla.4s v24, v6, v2[0]          \n\t"
+        "fmla.4s v25, v5, v2[1]          \n\t"
+        "fmla.4s v26, v6, v2[1]         \n\t"
+        "fmla.4s v27, v5, v2[2]         \n\t"
+        "fmla.4s v28, v6, v2[2]         \n\t"
+        "fmla.4s v29, v5, v2[3]         \n\t"
+        "fmla.4s v30, v6, v2[3]         \n\t" // Iter 1
+        "ldr q2, [x0, #32]              \n\t"
+        "add x0, x0, x4                \n\t"
+        "sub x3, x3, 2                  \n\t"
+        "cmp x3, 2                       \n\t"
+        "bne main_iter%=                  \n\t"
+
+        "ldp q5, q6, [x1]          \n\t"
+        "fmla.4s v7, v3, v0[0]          \n\t" // Last iter
+        "fmla.4s v8, v4, v0[0]          \n\t"
+        "fmla.4s v9, v3, v0[1]          \n\t"
+        "fmla.4s v10, v4, v0[1]         \n\t"
+        "fmla.4s v11, v3, v0[2]         \n\t"
+        "fmla.4s v12, v4, v0[2]         \n\t"
+        "fmla.4s v13, v3, v0[3]         \n\t"
+        "fmla.4s v14, v4, v0[3]         \n\t"
+        "ldr q0, [x0]                   \n\t"
+        "fmla.4s v15, v3, v1[0]          \n\t"
+        "fmla.4s v16, v4, v1[0]          \n\t"
+        "fmla.4s v17, v3, v1[1]          \n\t"
+        "fmla.4s v18, v4, v1[1]         \n\t"
+        "fmla.4s v19, v3, v1[2]         \n\t"
+        "fmla.4s v20, v4, v1[2]         \n\t"
+        "fmla.4s v21, v3, v1[3]         \n\t"
+        "fmla.4s v22, v4, v1[3]         \n\t"
+        "ldr q1, [x0, #16]              \n\t"
+        "fmla.4s v23, v3, v2[0]          \n\t"
+        "fmla.4s v24, v4, v2[0]          \n\t"
+        "fmla.4s v25, v3, v2[1]          \n\t"
+        "fmla.4s v26, v4, v2[1]         \n\t"
+        "fmla.4s v27, v3, v2[2]         \n\t"
+        "fmla.4s v28, v4, v2[2]         \n\t"
+        "fmla.4s v29, v3, v2[3]         \n\t"
+        "fmla.4s v30, v4, v2[3]         \n\t" // Iter 0
+        "ldr q2, [x0, #32]              \n\t"
+
+        "fmla.4s v7, v5, v0[0]          \n\t"
+        "fmla.4s v8, v6, v0[0]          \n\t"
+        "fmla.4s v9, v5, v0[1]          \n\t"
+        "fmla.4s v10, v6, v0[1]         \n\t"
+        "fmla.4s v11, v5, v0[2]         \n\t"
+        "fmla.4s v12, v6, v0[2]         \n\t"
+        "fmla.4s v13, v5, v0[3]         \n\t"
+        "fmla.4s v14, v6, v0[3]         \n\t"
+        "fmla.4s v15, v5, v1[0]          \n\t"
+        "fmla.4s v16, v6, v1[0]          \n\t"
+        "fmla.4s v17, v5, v1[1]          \n\t"
+        "fmla.4s v18, v6, v1[1]         \n\t"
+        "fmla.4s v19, v5, v1[2]         \n\t"
+        "fmla.4s v20, v6, v1[2]         \n\t"
+        "fmla.4s v21, v5, v1[3]         \n\t"
+        "fmla.4s v22, v6, v1[3]         \n\t"
+        "fmla.4s v23, v5, v2[0]          \n\t"
+        "fmla.4s v24, v6, v2[0]          \n\t"
+        "fmla.4s v25, v5, v2[1]          \n\t"
+        "fmla.4s v26, v6, v2[1]         \n\t"
+        "fmla.4s v27, v5, v2[2]         \n\t"
+        "fmla.4s v28, v6, v2[2]         \n\t"
+        "fmla.4s v29, v5, v2[3]         \n\t"
+        "fmla.4s v30, v6, v2[3]         \n\t" // Iter 1
+
+
+
+        "stp q7, q8, [x2] \n\t" 
+        "add x2, x2, x6 \n\t"
+        "stp q9, q10, [x2] \n\t" 
+        "add x2, x2, x6 \n\t"
+        "stp q11, q12, [x2] \n\t" 
+        "add x2, x2, x6 \n\t"
+        "stp q13, q14, [x2] \n\t" 
+        "add x2, x2, x6 \n\t"
+        "stp q15, q16, [x2] \n\t" 
+        "add x2, x2, x6 \n\t"
+        "stp q17, q18, [x2] \n\t" 
+        "add x2, x2, x6 \n\t"
+        "stp Q19, q20, [x2] \n\t"
+        "add x2, x2, x6 \n\t" 
+        "stp Q21, q22, [x2] \n\t" 
+        "add x2, x2, x6 \n\t"
+        "stp Q23, q24, [x2] \n\t" 
+        "add x2, x2, x6 \n\t"
+        "stp Q25, q26, [x2] \n\t" 
+        "add x2, x2, x6 \n\t"
+        "stp Q27, q28, [x2] \n\t"
+        "add x2, x2, x6 \n\t" 
+        "stp Q29, q30, [x2] \n\t" 
+        :
+        :
+        [aaddr] "m"(aData),
+        [baddr] "m"(bData),
+        [outaddr] "m"(outData),
+        [n] "m" (N),
+        [s_a] "m" (s_a),
+        [s_b] "m" (s_b),
+        [s_out] "m" (s_out)
+        : 
+        "x0", "x1", "x2",  
+        "x3", "x4", "x5",
+        "x6",
+        "v0", "v1", "v2", "v3",
+        "v4", "v5", "v6", "v7",
+        "v8", "v9", "v10", "v11",
+        "v12", "v13", "v14", "v15",
+        "v16", "v17", "v18", "v19",
+        "v20", "v21", "v22", "v23",
+        "v24", "v25", "v26", "v27",
+        "v28", "v29", "v30", "v31"
+    );
+
+}
 
 
 void matmul_4x4_micro_kernel(int N, float *aData, float *bData, float *outData, int s_a, int s_b, int s_out){
@@ -143,7 +356,7 @@ void matmul_4x4_micro_kernel(int N, float *aData, float *bData, float *outData, 
     vfloat4 res14 = {0, 0, 0, 0};
     vfloat4 res15 = {0, 0, 0, 0};
     vfloat4 res16 = {0, 0, 0, 0};
-
+    
 
     vfloat4 va1 = vld1q_f32(aData);
     vfloat4 va2 = vld1q_f32(aData+s_a);
@@ -158,7 +371,7 @@ void matmul_4x4_micro_kernel(int N, float *aData, float *bData, float *outData, 
     aData += 3*s_a;
     bData += s_b;
 
-
+    
     for (size_t n = 0; n < N; n+=4)
     {
         res1 = vfmaq_laneq_f32(res1, vb1, va1, 0);
@@ -196,10 +409,10 @@ void matmul_4x4_micro_kernel(int N, float *aData, float *bData, float *outData, 
     res1 = vaddq_f32(res1, res5);
     res9 = vaddq_f32(res9, res13);
     res2 = vaddq_f32(res2, res6);
-    res10 = vaddq_f32(res10, res14);
-    res3 = vaddq_f32(res3, res7);
+        res10 = vaddq_f32(res10, res14);
+        res3 = vaddq_f32(res3, res7);
     res11 = vaddq_f32(res11, res15);
-    res4 = vaddq_f32(res4, res8);
+        res4 = vaddq_f32(res4, res8);
     res12 = vaddq_f32(res12, res16);
     res1 = vaddq_f32(res1,res9);
     res2 = vaddq_f32(res2,res10);
