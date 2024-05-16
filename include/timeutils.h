@@ -21,8 +21,6 @@ double calculate_gflops(Matrix& A, Matrix& B, Matrix& out, Op op){
     int N = A.rows;
     int K = B.cols;
     long long total_flops = 2LL * M * K * N;
-    std::cout << elapsed_time<<std::endl;
-    std::cout << total_flops<<std::endl;
     double gflops = total_flops / elapsed_time;
     return gflops;
 }

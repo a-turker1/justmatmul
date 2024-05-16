@@ -2,3 +2,8 @@
 #include "matrix.h"
 void naive_matmul(Matrix& a, Matrix& b, Matrix& out);
 void neon_matmul(Matrix &a, Matrix &b, Matrix &out);
+void naive_matmul_4x1(Matrix &a, Matrix &b, Matrix &out);
+void naive_matmul_4x4(Matrix &a, Matrix &b, Matrix &out);
+void naive_matmul_4x4_neon(Matrix &a, Matrix &b, Matrix &out);
+void naive_matmul_4x4_neon_2(Matrix &a, Matrix &b, Matrix &out);
+void naive_matmul_4x4_neon_3(Matrix &a, Matrix &b_, Matrix &out);

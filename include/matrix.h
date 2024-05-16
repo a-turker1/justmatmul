@@ -18,6 +18,16 @@ struct Matrix
         
     }
 
+    Matrix(int rows_, int cols_, float val) : rows(rows_), cols(cols_)
+    {
+        base = new float[rows_ * cols_];
+        for (size_t i = 0; i < rows_*cols_; i++)
+        {
+            base[i] = val;
+        }
+        
+    }
+
     ~Matrix()
     {
         delete[] base;
@@ -54,7 +64,7 @@ struct Matrix
             os << "[";
             for (int j = 0; j < mat.cols; ++j)
             {
-                os << mat.base[i * mat.cols + j];
+                os << mat.base[i + mat.rows * j];
                 if (j < mat.cols - 1)
                 {
                     os << ", ";
