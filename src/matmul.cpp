@@ -253,7 +253,7 @@ void naive_matmul_4x4_neon_3(Matrix &a, Matrix &b_, Matrix &out)
             float32x4_t res16 = {0, 0, 0, 0};
 
             float32x4_t va1, va2, va3, va4, vb1, vb2, vb3, vb4;
-            for (int n = 0; n < N-3; n += 4)
+            for (int n = 0; n < N - 3; n += 4)
             {
                 va1 = vld1q_f32(aData + M * n + m);
                 vb1 = vld1q_f32(bData + K * n + k);
@@ -302,6 +302,222 @@ void naive_matmul_4x4_neon_3(Matrix &a, Matrix &b_, Matrix &out)
             vst1q_f32(outData + M * (k + 2) + m, res3);
             vst1q_f32(outData + M * (k + 3) + m, res4);
         }
+    }
+}
+
+void naive_matmul_4x4_neon_4(Matrix &a, Matrix &b_, Matrix &out)
+{
+    auto b = b_.transpose();
+    int M = a.rows;
+    int N = a.cols;
+    int K = b.rows;
+
+    float *aData = a.data();
+    float *bData = b.data();
+    float *outData = out.data();
+
+    for (int m = 0; m < M - 3; m += 4)
+    {
+        for (int k = 0; k < K - 3; k += 4)
+        {
+            float32x4_t res1 = {0, 0, 0, 0};
+            float32x4_t res2 = {0, 0, 0, 0};
+            float32x4_t res3 = {0, 0, 0, 0};
+            float32x4_t res4 = {0, 0, 0, 0};
+
+            float32x4_t res5 = {0, 0, 0, 0};
+            float32x4_t res6 = {0, 0, 0, 0};
+            float32x4_t res7 = {0, 0, 0, 0};
+            float32x4_t res8 = {0, 0, 0, 0};
+
+            float32x4_t res9 = {0, 0, 0, 0};
+            float32x4_t res10 = {0, 0, 0, 0};
+            float32x4_t res11 = {0, 0, 0, 0};
+            float32x4_t res12 = {0, 0, 0, 0};
+
+            float32x4_t res13 = {0, 0, 0, 0};
+            float32x4_t res14 = {0, 0, 0, 0};
+            float32x4_t res15 = {0, 0, 0, 0};
+            float32x4_t res16 = {0, 0, 0, 0};
+
+            float32x4_t va1, va2, va3, va4, vb1, vb2, vb3, vb4;
+
+            va1 = vld1q_f32(aData + m);
+            vb1 = vld1q_f32(bData + k);
+            va2 = vld1q_f32(aData + M + m);
+            vb2 = vld1q_f32(bData + K + k);
+            va3 = vld1q_f32(aData + M * 2 + m);
+            vb3 = vld1q_f32(bData + K * 2 + k);
+            va4 = vld1q_f32(aData + M * 3 + m);
+            vb4 = vld1q_f32(bData + K * 3 + k);
+            for (int n = 0; n < N - 7; n += 4)
+            {
+                res1 = vfmaq_laneq_f32(res1, vb1, va1, 0);
+                res2 = vfmaq_laneq_f32(res2, vb1, va1, 1);
+                res3 = vfmaq_laneq_f32(res3, vb1, va1, 2);
+                res4 = vfmaq_laneq_f32(res4, vb1, va1, 3);
+                va1 = vld1q_f32(aData + M * (n + 4) + m);
+                vb1 = vld1q_f32(bData + K * (n + 4) + k);
+
+                res5 = vfmaq_laneq_f32(res5, vb2, va2, 0);
+                res6 = vfmaq_laneq_f32(res6, vb2, va2, 1);
+                res7 = vfmaq_laneq_f32(res7, vb2, va2, 2);
+                res8 = vfmaq_laneq_f32(res8, vb2, va2, 3);
+                va2 = vld1q_f32(aData + M * (n + 5) + m);
+                vb2 = vld1q_f32(bData + K * (n + 5) + k);
+
+                res9 = vfmaq_laneq_f32(res9, vb3, va3, 0);
+                res10 = vfmaq_laneq_f32(res10, vb3, va3, 1);
+                res11 = vfmaq_laneq_f32(res11, vb3, va3, 2);
+                res12 = vfmaq_laneq_f32(res12, vb3, va3, 3);
+                va3 = vld1q_f32(aData + M * (n + 6) + m);
+                vb3 = vld1q_f32(bData + K * (n + 6) + k);
+
+                res13 = vfmaq_laneq_f32(res13, vb4, va4, 0);
+                res14 = vfmaq_laneq_f32(res14, vb4, va4, 1);
+                res15 = vfmaq_laneq_f32(res15, vb4, va4, 2);
+                res16 = vfmaq_laneq_f32(res16, vb4, va4, 3);
+                va4 = vld1q_f32(aData + M * (n + 7) + m);
+                vb4 = vld1q_f32(bData + K * (n + 7) + k);
+            }
+
+            res1 = vfmaq_laneq_f32(res1, vb1, va1, 0);
+            res2 = vfmaq_laneq_f32(res2, vb1, va1, 1);
+            res3 = vfmaq_laneq_f32(res3, vb1, va1, 2);
+            res4 = vfmaq_laneq_f32(res4, vb1, va1, 3);
+
+            res5 = vfmaq_laneq_f32(res5, vb2, va2, 0);
+            res6 = vfmaq_laneq_f32(res6, vb2, va2, 1);
+            res7 = vfmaq_laneq_f32(res7, vb2, va2, 2);
+            res8 = vfmaq_laneq_f32(res8, vb2, va2, 3);
+
+            res9 = vfmaq_laneq_f32(res9, vb3, va3, 0);
+            res10 = vfmaq_laneq_f32(res10, vb3, va3, 1);
+            res11 = vfmaq_laneq_f32(res11, vb3, va3, 2);
+            res12 = vfmaq_laneq_f32(res12, vb3, va3, 3);
+
+            res13 = vfmaq_laneq_f32(res13, vb4, va4, 0);
+            res14 = vfmaq_laneq_f32(res14, vb4, va4, 1);
+            res15 = vfmaq_laneq_f32(res15, vb4, va4, 2);
+            res16 = vfmaq_laneq_f32(res16, vb4, va4, 3);
+
+            res1 = vaddq_f32(res1, res5);
+            res9 = vaddq_f32(res9, res13);
+            res2 = vaddq_f32(res2, res6);
+            res10 = vaddq_f32(res10, res14);
+            res3 = vaddq_f32(res3, res7);
+            res11 = vaddq_f32(res11, res15);
+            res4 = vaddq_f32(res4, res8);
+            res12 = vaddq_f32(res12, res16);
+            res1 = vaddq_f32(res1, res9);
+            res2 = vaddq_f32(res2, res10);
+            res3 = vaddq_f32(res3, res11);
+            res4 = vaddq_f32(res4, res12);
+
+            vst1q_f32(outData + M * k + m, res1);
+            vst1q_f32(outData + M * (k + 1) + m, res2);
+            vst1q_f32(outData + M * (k + 2) + m, res3);
+            vst1q_f32(outData + M * (k + 3) + m, res4);
+        }
+    }
+}
+
+void naive_matmul_4x4_neon_5(Matrix &a, Matrix &b_, Matrix &out)
+{
+    auto b = b_.transpose();
+    int M = a.rows;
+    int N = a.cols;
+    int K = b.rows;
+
+    float *aData = a.data();
+    float *bData = b.data();
+    float *outData = out.data();
+    int block_size = 128;
+
+    auto blocked_func = [&](int M, int N, int K, float *aData, int lda, float *bData, int ldb, float *outData, int ldo)
+    {
+        for (int m = 0; m < M - 3; m += 4)
+        {
+            for (int k = 0; k < K - 3; k += 4)
+            {
+
+                float32x4_t res1 = {0, 0, 0, 0};
+                float32x4_t res2 = {0, 0, 0, 0};
+                float32x4_t res3 = {0, 0, 0, 0};
+                float32x4_t res4 = {0, 0, 0, 0};
+
+                float32x4_t res5 = {0, 0, 0, 0};
+                float32x4_t res6 = {0, 0, 0, 0};
+                float32x4_t res7 = {0, 0, 0, 0};
+                float32x4_t res8 = {0, 0, 0, 0};
+
+                float32x4_t res9 = {0, 0, 0, 0};
+                float32x4_t res10 = {0, 0, 0, 0};
+                float32x4_t res11 = {0, 0, 0, 0};
+                float32x4_t res12 = {0, 0, 0, 0};
+
+                float32x4_t res13 = {0, 0, 0, 0};
+                float32x4_t res14 = {0, 0, 0, 0};
+                float32x4_t res15 = {0, 0, 0, 0};
+                float32x4_t res16 = {0, 0, 0, 0};
+
+                float32x4_t va1, va2, va3, va4, vb1, vb2, vb3, vb4;
+                for (int n = 0; n < N - 3; n += 4)
+                {
+                    va1 = vld1q_f32(aData + lda * n + m);
+                    vb1 = vld1q_f32(bData + ldb * n + k);
+                    res1 = vfmaq_laneq_f32(res1, vb1, va1, 0);
+                    res2 = vfmaq_laneq_f32(res2, vb1, va1, 1);
+                    res3 = vfmaq_laneq_f32(res3, vb1, va1, 2);
+                    res4 = vfmaq_laneq_f32(res4, vb1, va1, 3);
+
+                    va2 = vld1q_f32(aData + lda * (n + 1) + m);
+                    vb2 = vld1q_f32(bData + ldb * (n + 1) + k);
+                    res5 = vfmaq_laneq_f32(res5, vb2, va2, 0);
+                    res6 = vfmaq_laneq_f32(res6, vb2, va2, 1);
+                    res7 = vfmaq_laneq_f32(res7, vb2, va2, 2);
+                    res8 = vfmaq_laneq_f32(res8, vb2, va2, 3);
+
+                    va3 = vld1q_f32(aData + lda * (n + 2) + m);
+                    vb3 = vld1q_f32(bData + ldb * (n + 2) + k);
+                    res9 = vfmaq_laneq_f32(res9, vb3, va3, 0);
+                    res10 = vfmaq_laneq_f32(res10, vb3, va3, 1);
+                    res11 = vfmaq_laneq_f32(res11, vb3, va3, 2);
+                    res12 = vfmaq_laneq_f32(res12, vb3, va3, 3);
+
+                    va4 = vld1q_f32(aData + lda * (n + 3) + m);
+                    vb4 = vld1q_f32(bData + ldb * (n + 3) + k);
+                    res13 = vfmaq_laneq_f32(res13, vb4, va4, 0);
+                    res14 = vfmaq_laneq_f32(res14, vb4, va4, 1);
+                    res15 = vfmaq_laneq_f32(res15, vb4, va4, 2);
+                    res16 = vfmaq_laneq_f32(res16, vb4, va4, 3);
+                }
+
+                res1 = vaddq_f32(res1, res5);
+                res9 = vaddq_f32(res9, res13);
+                res2 = vaddq_f32(res2, res6);
+                res10 = vaddq_f32(res10, res14);
+                res3 = vaddq_f32(res3, res7);
+                res11 = vaddq_f32(res11, res15);
+                res4 = vaddq_f32(res4, res8);
+                res12 = vaddq_f32(res12, res16);
+                res1 = vaddq_f32(res1, res9);
+                res2 = vaddq_f32(res2, res10);
+                res3 = vaddq_f32(res3, res11);
+                res4 = vaddq_f32(res4, res12);
+
+                vst1q_f32(outData + M * k + m, res1);
+                vst1q_f32(outData + M * (k + 1) + m, res2);
+                vst1q_f32(outData + M * (k + 2) + m, res3);
+                vst1q_f32(outData + M * (k + 3) + m, res4);
+            }
+        }
+    };
+
+    for (int n = 0; n < N; n+=block_size)
+    {
+        int n_ = fmin(N - n, block_size);
+        blocked_func(M, n_, K, aData + (M * n_), M, bData + (K * n_), K, outData, K);
     }
 }
 
