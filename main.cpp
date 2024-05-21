@@ -38,7 +38,7 @@ int main()
     {
         outputFile << STEP_SIZE * i << ",";
     }
-    outputFile<<"\n";
+    outputFile << std::endl;
     
     for (const auto &benchmark : benchmarks) {
         outputFile<<benchmark.name<<",";
@@ -52,7 +52,7 @@ int main()
             std::cout << STEP_SIZE * i << " gflops: " << gflops << std::endl;
             outputFile<< gflops<<",";
         }
-        outputFile<<"\n";
+        outputFile << std::endl;
     }
 
     outputFile << std::endl;

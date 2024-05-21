@@ -514,7 +514,7 @@ void naive_matmul_4x4_neon_5(Matrix &a, Matrix &b_, Matrix &out)
         }
     };
 
-    for (int n = 0; n < N; n+=block_size)
+    for (int n = 0; n < N; n += block_size)
     {
         int n_ = fmin(N - n, block_size);
         blocked_func(M, n_, K, aData + (M * n_), M, bData + (K * n_), K, outData, K);
