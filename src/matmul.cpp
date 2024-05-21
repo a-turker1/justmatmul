@@ -1,6 +1,12 @@
 #include "matmul.h"
 #include <arm_neon.h>
 #include "micro.h"
+
+int min(float a, float b)
+{
+    return (a < b) ? a : b;
+}
+
 void inner_loop(int N, int M, int K, float *aData, float *bData, float *outData, int lda, int ldb, int ldc);
 
 void naive_matmul(Matrix &a, Matrix &b, Matrix &out)
@@ -117,7 +123,7 @@ void naive_matmul_4x4(Matrix &a, Matrix &b, Matrix &out)
     }
 }
 
-void naive_matmul_4x4_neon(Matrix &a, Matrix &b, Matrix &out)
+void matmul_4x4_neon(Matrix &a, Matrix &b, Matrix &out)
 {
     int M = a.rows;
     int N = b.rows;
@@ -178,7 +184,7 @@ void naive_matmul_4x4_neon(Matrix &a, Matrix &b, Matrix &out)
     }
 }
 
-void naive_matmul_4x4_neon_2(Matrix &a, Matrix &b_, Matrix &out)
+void matmul_4x4_neon_2(Matrix &a, Matrix &b_, Matrix &out)
 {
     int M = a.rows;
     int N = a.cols;
@@ -217,7 +223,7 @@ void naive_matmul_4x4_neon_2(Matrix &a, Matrix &b_, Matrix &out)
     }
 }
 
-void naive_matmul_4x4_neon_3(Matrix &a, Matrix &b_, Matrix &out)
+void matmul_4x4_neon_3(Matrix &a, Matrix &b_, Matrix &out)
 {
     auto b = b_.transpose();
     int M = a.rows;
@@ -305,7 +311,7 @@ void naive_matmul_4x4_neon_3(Matrix &a, Matrix &b_, Matrix &out)
     }
 }
 
-void naive_matmul_4x4_neon_4(Matrix &a, Matrix &b_, Matrix &out)
+void matmul_4x4_neon_4(Matrix &a, Matrix &b_, Matrix &out)
 {
     auto b = b_.transpose();
     int M = a.rows;
@@ -422,7 +428,7 @@ void naive_matmul_4x4_neon_4(Matrix &a, Matrix &b_, Matrix &out)
     }
 }
 
-void naive_matmul_4x4_neon_5(Matrix &a, Matrix &b_, Matrix &out)
+void matmul_4x4_neon_5(Matrix &a, Matrix &b_, Matrix &out)
 {
     auto b = b_.transpose();
     int M = a.rows;
@@ -521,6 +527,36 @@ void naive_matmul_4x4_neon_5(Matrix &a, Matrix &b_, Matrix &out)
     }
 }
 
+void matmul_12x8_neon(Matrix &a, Matrix &b_, Matrix &out)
+{
+    auto b = b_.transpose();
+    int M = a.rows;
+    int N = a.cols;
+    int K = b.rows;
+
+    float *aData = a.data();
+    float *bData = b.data();
+    float *outData = out.data();
+    int block_size = 128;
+
+    auto blocked_func = [&](int M, int N, int K, float *aData, int lda, float *bData, int ldb, float *outData, int ldo)
+    {
+        for (int m = 0; m < M - 11; m += 12)
+        {
+            for (int k = 0; k < K - 7; k += 8)
+            {
+                matmul_12x8_micro_kernel_col_major(N, aData + m, bData + ldb * k, outData + m + ldo * k, lda, ldb, ldo);
+            }
+        }
+    };
+
+    for (int n = 0; n < N; n += block_size)
+    {
+        int n_ = min(N - n, block_size);
+        blocked_func(M, n_, K, aData + (M * (n_ - 24)), M, bData + (K * (n_ - 24)), K, outData, K);
+    }
+}
+
 void neon_matmul(Matrix &a, Matrix &b, Matrix &out)
 {
     // auto a = a_.transpose();
@@ -546,25 +582,6 @@ void neon_matmul(Matrix &a, Matrix &b, Matrix &out)
 
     int remaining_M = M % 120;
     int remaining_K = K % 120;
-
-    // // for (int m = 0; m < M - 11; m += 12)
-    // // {
-    // //     for (int k = 0; k < K - 7; k += 8)
-    // //     {
-    // //         matmul_12x8_micro_kernel_asmb(N, aData + m, bData + k, outData + m * out.cols + k, a.cols, b.cols, out.cols);
-    // //     }
-    // // }
-
-    // // // for (int m = 0; m < M - 3; m += 4)
-    // // // {
-    // // //     for (int k = 0; k < K - 3; k += 4)
-    // // //     {
-    // // //         matmul_4x4_micro_kernel(N, aData + m, bData + k, outData + m * out.cols + k, a.cols, b.cols, out.cols);
-    // // //     }
-    // // // }
-
-    // int remaining_M = M % 12;
-    // int remaining_K = K % 8;
 
     for (size_t m = 0; m < M - 3; m += 4)
     {

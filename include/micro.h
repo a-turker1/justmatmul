@@ -11,7 +11,7 @@ Applies operation A@B=OUT.
 Expected A (mxn) transposed, B(NXK) row major and out (MXK) row major.
 */
 
-void matmul_12x8_micro_kernel(int N, float *aData, float *bData, float *outData, int s_a, int s_b, int s_out)
+void matmul_12x8_micro_kernel_row_major(int N, float *aData, float *bData, float *outData, int s_a, int s_b, int s_out)
 {
     vfloat4 res1 = {0, 0, 0, 0};
     vfloat4 res2 = {0, 0, 0, 0};
@@ -120,13 +120,125 @@ void matmul_12x8_micro_kernel(int N, float *aData, float *bData, float *outData,
     vst1q_f32(outData + 11 * s_out + 4, res24);
 }
 
+/*
+Applies opreation A@B.T=OUT
+Expected A (mxn), B(NXK) column major transposed and out (MXK) row major.
+*/
+void matmul_12x8_micro_kernel_col_major(int N, float *aData, float *bData, float *outData, int lda, int ldb, int ldout)
+{
+    vfloat4 res1 = vld1q_f32(outData);
+    vfloat4 res2 = vld1q_f32(outData + 4);
+    vfloat4 res3 = vld1q_f32(outData + 8);
+    vfloat4 res4 = vld1q_f32(outData + ldout);
+    vfloat4 res5 = vld1q_f32(outData + ldout + 4);
+    vfloat4 res6 = vld1q_f32(outData + ldout + 8);
+    vfloat4 res7 = vld1q_f32(outData + 2 * ldout);
+    vfloat4 res8 = vld1q_f32(outData + 2 * ldout + 4);
+    vfloat4 res9 = vld1q_f32(outData + 2 * ldout + 8);
+    vfloat4 res10 = vld1q_f32(outData + 3 * ldout);
+    vfloat4 res11 = vld1q_f32(outData + 3 * ldout + 4);
+    vfloat4 res12 = vld1q_f32(outData + 3 * ldout + 8);
+    vfloat4 res13 = vld1q_f32(outData + 4 * ldout);
+    vfloat4 res14 = vld1q_f32(outData + 4 * ldout + 4);
+    vfloat4 res15 = vld1q_f32(outData + 4 * ldout + 8);
+    vfloat4 res16 = vld1q_f32(outData + 5 * ldout);
+    vfloat4 res17 = vld1q_f32(outData + 5 * ldout + 4);
+    vfloat4 res18 = vld1q_f32(outData + 5 * ldout + 8);
+    vfloat4 res19 = vld1q_f32(outData + 6 * ldout);
+    vfloat4 res20 = vld1q_f32(outData + 6 * ldout + 4);
+    vfloat4 res21 = vld1q_f32(outData + 6 * ldout + 8);
+    vfloat4 res22 = vld1q_f32(outData + 7 * ldout);
+    vfloat4 res23 = vld1q_f32(outData + 7 * ldout + 4);
+    vfloat4 res24 = vld1q_f32(outData + 7 * ldout + 8);
+
+    vfloat4 va1 = vld1q_f32(aData);
+    vfloat4 vb1_1 = vld1q_f32(bData);
+    vfloat4 va2 = vld1q_f32(aData + 4);
+    vfloat4 vb2_1 = vld1q_f32(bData + 4);
+    vfloat4 va3 = vld1q_f32(aData + 8);
+
+    aData += lda;
+    bData += ldb;
+
+    for (size_t n = 0; n < N; n++) // n
+    {
+        res1 = vfmaq_laneq_f32(res1, vb1_1, va1, 0);
+        res2 = vfmaq_laneq_f32(res2, vb2_1, va1, 0); // Row1
+
+        res3 = vfmaq_laneq_f32(res3, vb1_1, va1, 1);
+        res4 = vfmaq_laneq_f32(res4, vb2_1, va1, 1); // Row2
+
+        res5 = vfmaq_laneq_f32(res5, vb1_1, va1, 2);
+        res6 = vfmaq_laneq_f32(res6, vb2_1, va1, 2); // Row3
+
+        res7 = vfmaq_laneq_f32(res7, vb1_1, va1, 3);
+        res8 = vfmaq_laneq_f32(res8, vb2_1, va1, 3); // Row4
+        va1 = vld1q_f32(aData);
+
+        res9 = vfmaq_laneq_f32(res9, vb1_1, va2, 0);
+        res10 = vfmaq_laneq_f32(res10, vb2_1, va2, 0); // Row8
+
+        res11 = vfmaq_laneq_f32(res11, vb1_1, va2, 1);
+        res12 = vfmaq_laneq_f32(res12, vb2_1, va2, 1); // Row9
+
+        res13 = vfmaq_laneq_f32(res13, vb1_1, va2, 2);
+        res14 = vfmaq_laneq_f32(res14, vb2_1, va2, 2); // Row10
+
+        res15 = vfmaq_laneq_f32(res15, vb1_1, va2, 3);
+        res16 = vfmaq_laneq_f32(res16, vb2_1, va2, 3); // Row11
+        va2 = vld1q_f32(aData + 4);
+
+        res17 = vfmaq_laneq_f32(res17, vb1_1, va3, 0);
+        res18 = vfmaq_laneq_f32(res18, vb2_1, va3, 0); // Row12
+
+        res19 = vfmaq_laneq_f32(res19, vb1_1, va3, 1);
+        res20 = vfmaq_laneq_f32(res20, vb2_1, va3, 1); // Row13
+
+        res21 = vfmaq_laneq_f32(res21, vb1_1, va3, 2);
+        res22 = vfmaq_laneq_f32(res22, vb2_1, va3, 2); // Row14
+
+        res23 = vfmaq_laneq_f32(res23, vb1_1, va3, 3);
+        res24 = vfmaq_laneq_f32(res24, vb2_1, va3, 3); // Row15
+        vb1_1 = vld1q_f32(bData);
+        vb2_1 = vld1q_f32(bData + 4);
+        va3 = vld1q_f32(aData + 8);
+
+        aData += lda;
+        bData += ldb;
+    }
+
+    vst1q_f32(outData, res1);
+    vst1q_f32(outData + 4, res2);
+    vst1q_f32(outData + 8, res3);
+    vst1q_f32(outData + ldout, res4);
+    vst1q_f32(outData + ldout + 4, res5);
+    vst1q_f32(outData + ldout + 8, res6);
+    vst1q_f32(outData + 2 * ldout, res7);
+    vst1q_f32(outData + 2 * ldout + 4, res8);
+    vst1q_f32(outData + 2 * ldout + 8, res9);
+    vst1q_f32(outData + 3 * ldout, res10);
+    vst1q_f32(outData + 3 * ldout + 4, res11);
+    vst1q_f32(outData + 3 * ldout + 8, res12);
+    vst1q_f32(outData + 4 * ldout, res13);
+    vst1q_f32(outData + 4 * ldout + 4, res14);
+    vst1q_f32(outData + 4 * ldout + 8, res15);
+    vst1q_f32(outData + 5 * ldout, res16);
+    vst1q_f32(outData + 5 * ldout + 4, res17);
+    vst1q_f32(outData + 5 * ldout + 8, res18);
+    vst1q_f32(outData + 6 * ldout, res19);
+    vst1q_f32(outData + 6 * ldout + 4, res20);
+    vst1q_f32(outData + 6 * ldout + 8, res21);
+    vst1q_f32(outData + 7 * ldout, res22);
+    vst1q_f32(outData + 7 * ldout + 4, res23);
+    vst1q_f32(outData + 7 * ldout + 8, res24);
+}
+
 void matmul_12x8_micro_kernel_asmb(int N, float *aData, float *bData, float *outData, long s_a, long s_b, long s_out)
 {
     s_a *= 4;
     s_b *= 4;
     s_out *= 4;
-    __asm__ volatile
-    (
+    __asm__ volatile(
         ""
         "dup v7.4s, wzr                 \n\t"
         "ldr x0, %[aaddr]               \n\t"
