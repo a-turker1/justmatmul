@@ -24,11 +24,12 @@ int main()
     }
 
     std::vector<Function> benchmarks;
-    benchmarks.push_back({"naive_matmul_4x4_neon", naive_matmul_4x4_neon});
-    benchmarks.push_back({"naive_matmul_4x4_neon_2", naive_matmul_4x4_neon_2});
-    benchmarks.push_back({"naive_matmul_4x4_neon_3", naive_matmul_4x4_neon_3});
-    benchmarks.push_back({"naive_matmul_4x4_neon_4", naive_matmul_4x4_neon_4});
-    benchmarks.push_back({"naive_matmul_4x4_neon_5", naive_matmul_4x4_neon_5});
+    benchmarks.push_back({"matmul_4x4_neon", matmul_4x4_neon});
+    benchmarks.push_back({"matmul_4x4_neon_2", matmul_4x4_neon_2});
+    benchmarks.push_back({"matmul_4x4_neon_3", matmul_4x4_neon_3});
+    benchmarks.push_back({"matmul_4x4_neon_4", matmul_4x4_neon_4});
+    benchmarks.push_back({"matmul_4x4_neon_5", matmul_4x4_neon_5});
+    benchmarks.push_back({"matmul_12x8_neon", matmul_12x8_neon});
 
 
 

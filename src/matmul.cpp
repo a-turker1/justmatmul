@@ -529,10 +529,11 @@ void matmul_4x4_neon_5(Matrix &a, Matrix &b_, Matrix &out)
 
 void matmul_12x8_neon(Matrix &a, Matrix &b_, Matrix &out)
 {
-    auto b = b_.transpose();
     int M = a.rows;
     int N = a.cols;
-    int K = b.rows;
+    int K = b_.cols;
+    
+    auto b = b_.transpose();
 
     float *aData = a.data();
     float *bData = b.data();
@@ -545,7 +546,7 @@ void matmul_12x8_neon(Matrix &a, Matrix &b_, Matrix &out)
         {
             for (int k = 0; k < K - 7; k += 8)
             {
-                matmul_12x8_micro_kernel_col_major(N, aData + m, bData + ldb * k, outData + m + ldo * k, lda, ldb, ldo);
+                matmul_12x8_micro_kernel_col_major(N, aData + m, bData +  k, outData + m + ldo * k, lda, ldb, ldo);
             }
         }
     };
@@ -553,7 +554,7 @@ void matmul_12x8_neon(Matrix &a, Matrix &b_, Matrix &out)
     for (int n = 0; n < N; n += block_size)
     {
         int n_ = min(N - n, block_size);
-        blocked_func(M, n_, K, aData + (M * (n_ - 24)), M, bData + (K * (n_ - 24)), K, outData, K);
+        blocked_func(M, n_, K, aData + (M * n), M, bData + (K * n), K, outData, M);
     }
 }
 
