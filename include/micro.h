@@ -11,6 +11,22 @@ Applies operation A@B=OUT.
 Expected A (mxn) transposed, B(NXK) row major and out (MXK) row major.
 */
 
+void naive_matmul_kernel(int M, int N, int K, float *aData, float *bData, float *outData, int s_a, int s_b, int s_out)
+{
+    for (int m = 0; m < M; m++)
+    {
+        for (int k = 0; k < K; k++)
+        {
+            float res = 0;
+            for (int n = 0; n < N; n++)
+            {
+                res += aData[s_a * n + m] * bData[n * s_b + k];
+            }
+            outData[s_out * k + m] = res;
+        }
+    }
+}
+
 void matmul_12x8_micro_kernel_row_major(int N, float *aData, float *bData, float *outData, int s_a, int s_b, int s_out)
 {
     vfloat4 res1 = {0, 0, 0, 0};
@@ -166,7 +182,7 @@ void matmul_4x4_micro_kernel_row_major(int N, float *aData, float *bData, float 
 
         va3 = vld1q_f32(aData + s_a * (n + 2));
         vb3 = vld1q_f32(bData + s_b * (n + 2));
-        res9 = vfmaq_laneq_f32(res9,   va3, vb3, 0);
+        res9 = vfmaq_laneq_f32(res9, va3, vb3, 0);
         res10 = vfmaq_laneq_f32(res10, va3, vb3, 1);
         res11 = vfmaq_laneq_f32(res11, va3, vb3, 2);
         res12 = vfmaq_laneq_f32(res12, va3, vb3, 3);
@@ -241,7 +257,7 @@ void matmul_12x8_micro_kernel_col_major(int N, float *aData, float *bData, float
     vfloat4 res19 = vld1q_f32(outData + 6 * ldout);
     vfloat4 res20 = vld1q_f32(outData + 6 * ldout + 4);
     vfloat4 res21 = vld1q_f32(outData + 6 * ldout + 8);
-    
+
     vfloat4 res22 = vld1q_f32(outData + 7 * ldout);
     vfloat4 res23 = vld1q_f32(outData + 7 * ldout + 4);
     vfloat4 res24 = vld1q_f32(outData + 7 * ldout + 8);
@@ -258,42 +274,42 @@ void matmul_12x8_micro_kernel_col_major(int N, float *aData, float *bData, float
     for (size_t n = 0; n < N; n++) // n
     {
         res1 = vfmaq_laneq_f32(res1, va1, vb1, 0);
-        res2 = vfmaq_laneq_f32(res2, va2, vb1, 0); 
+        res2 = vfmaq_laneq_f32(res2, va2, vb1, 0);
         res3 = vfmaq_laneq_f32(res3, va3, vb1, 0); // Col1
 
         res4 = vfmaq_laneq_f32(res4, va1, vb1, 1);
-        res5 = vfmaq_laneq_f32(res6, va2, vb1, 1); 
+        res5 = vfmaq_laneq_f32(res6, va2, vb1, 1);
         res6 = vfmaq_laneq_f32(res7, va3, vb1, 1); // Col2
 
         res7 = vfmaq_laneq_f32(res7, va1, vb1, 2);
-        res8 = vfmaq_laneq_f32(res8, va2, vb1, 2); 
+        res8 = vfmaq_laneq_f32(res8, va2, vb1, 2);
         res9 = vfmaq_laneq_f32(res9, va3, vb1, 2); // Col3
 
         res10 = vfmaq_laneq_f32(res10, va1, vb1, 3);
-        res11 = vfmaq_laneq_f32(res11, va2, vb1, 3); 
+        res11 = vfmaq_laneq_f32(res11, va2, vb1, 3);
         res12 = vfmaq_laneq_f32(res12, va3, vb1, 3); // Col4
         vb1 = vld1q_f32(bData);
 
         res13 = vfmaq_laneq_f32(res13, va1, vb2, 0);
-        res14 = vfmaq_laneq_f32(res14, va2, vb2, 0); 
+        res14 = vfmaq_laneq_f32(res14, va2, vb2, 0);
         res15 = vfmaq_laneq_f32(res15, va3, vb2, 0); // Col5
 
         res16 = vfmaq_laneq_f32(res16, va1, vb2, 1);
-        res17 = vfmaq_laneq_f32(res17, va2, vb2, 1); 
+        res17 = vfmaq_laneq_f32(res17, va2, vb2, 1);
         res18 = vfmaq_laneq_f32(res18, va3, vb2, 1); // Col6
 
         res19 = vfmaq_laneq_f32(res19, va1, vb2, 2);
-        res20 = vfmaq_laneq_f32(res20, va2, vb2, 2); 
+        res20 = vfmaq_laneq_f32(res20, va2, vb2, 2);
         res21 = vfmaq_laneq_f32(res21, va3, vb2, 2); // Col7
 
         res22 = vfmaq_laneq_f32(res22, va1, vb2, 3);
-        res23 = vfmaq_laneq_f32(res23, va2, vb2, 3); 
+        res23 = vfmaq_laneq_f32(res23, va2, vb2, 3);
         res24 = vfmaq_laneq_f32(res24, va3, vb2, 3); // Col8
 
         va1 = vld1q_f32(aData);
         va2 = vld1q_f32(aData + 4);
         va3 = vld1q_f32(aData + 8);
-        vb2 = vld1q_f32(bData+4);
+        vb2 = vld1q_f32(bData + 4);
 
         aData += lda;
         bData += ldb;

@@ -3,7 +3,7 @@ project(justmatmul VERSION 0.1.0 LANGUAGES C CXX)
 
 set (CMAKE_CXX_STANDARD 11)
 include(CTest)
-set(CMAKE_CXX_FLAGS "-O3 -funroll-loops -std=c++11 -fomit-frame-pointer")
+set(CMAKE_CXX_FLAGS "-O3 -funroll-loops -std=c++11")
 enable_testing()
 
 add_executable(justmatmul main.cpp src/matmul.cpp)
