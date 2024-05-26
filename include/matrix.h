@@ -13,7 +13,7 @@ struct Matrix
         base = new float[rows_ * cols_];
         for (size_t i = 0; i < rows_*cols_; i++)
         {
-            base[i] = 1;
+            base[i] = (i % rows_) * cols_ + i/rows_;
         }
         
     }
@@ -48,9 +48,9 @@ struct Matrix
         auto data = transposed.data();
         for (size_t i = 0; i < cols*rows; i++)
         {
-            int _row = i/cols;
-            int _col = i%cols;
-            data[rows*_col + _row] = base[i];
+            int _col = i/rows;
+            int _row = i%rows;
+            data[_col + cols*_row] = base[i];
         }
         return transposed;
 
@@ -61,9 +61,24 @@ struct Matrix
         os << "[";
         for (int i = 0; i < mat.rows; ++i)
         {
+
+            if (mat.rows > 6 && i == 3)
+            {
+                os << "..., " << std::endl;
+                i = mat.rows - 4;
+                continue;
+            }
+            
             os << "[";
             for (int j = 0; j < mat.cols; ++j)
             {
+                if (mat.cols > 6 && j == 3)
+                {
+                    os << "..., ";
+                    j = mat.cols - 4;
+                    continue;
+                }
+
                 os << mat.base[i + mat.rows * j];
                 if (j < mat.cols - 1)
                 {
