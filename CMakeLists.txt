@@ -9,6 +9,9 @@ enable_testing()
 add_executable(justmatmul main.cpp src/matmul.cpp)
 target_include_directories(justmatmul PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+add_executable(benchmark benchmark.cpp src/matmul.cpp)
+target_include_directories(benchmark PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
