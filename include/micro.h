@@ -11,7 +11,7 @@ Applies operation A@B=OUT.
 Expected A (mxn) transposed, B(NXK) row major and out (MXK) row major.
 */
 
-void naive_matmul_kernel(int M, int N, int K, float *aData, float *bData, float *outData, int s_a, int s_b, int s_out)
+void naive_matmul_col_major_kernel(int M, int N, int K, float *aData, float *bData, float *outData, int s_a, int s_b, int s_out)
 {
     for (int m = 0; m < M; m++)
     {
@@ -23,6 +23,22 @@ void naive_matmul_kernel(int M, int N, int K, float *aData, float *bData, float 
                 res += aData[s_a * n + m] * bData[n * s_b + k];
             }
             outData[s_out * k + m] = res;
+        }
+    }
+}
+
+void naive_matmul_row_major_kernel(int M, int N, int K, float *aData, float *bData, float *outData, int s_a, int s_b, int s_out)
+{
+    for (int m = 0; m < M; m++)
+    {
+        for (int k = 0; k < K; k++)
+        {
+            float res = 0;
+            for (int n = 0; n < N; n++)
+            {
+                res += aData[s_a * n + m] * bData[n * s_b + k];
+            }
+            outData[s_out * m + k] = res;
         }
     }
 }
@@ -141,7 +157,92 @@ void matmul_12x8_micro_kernel_row_major(int N, float *aData, float *bData, float
     vst1q_f32(outData + 11 * s_out + 4, res24);
 }
 
+
 void matmul_4x4_micro_kernel_row_major(int N, float *aData, float *bData, float *outData, int s_a, int s_b, int s_out)
+{
+    float32x4_t res1 = {0, 0, 0, 0};
+    float32x4_t res2 = {0, 0, 0, 0};
+    float32x4_t res3 = {0, 0, 0, 0};
+    float32x4_t res4 = {0, 0, 0, 0};
+
+    float32x4_t res5 = {0, 0, 0, 0};
+    float32x4_t res6 = {0, 0, 0, 0};
+    float32x4_t res7 = {0, 0, 0, 0};
+    float32x4_t res8 = {0, 0, 0, 0};
+
+    float32x4_t res9 = {0, 0, 0, 0};
+    float32x4_t res10 = {0, 0, 0, 0};
+    float32x4_t res11 = {0, 0, 0, 0};
+    float32x4_t res12 = {0, 0, 0, 0};
+
+    float32x4_t res13 = {0, 0, 0, 0};
+    float32x4_t res14 = {0, 0, 0, 0};
+    float32x4_t res15 = {0, 0, 0, 0};
+    float32x4_t res16 = {0, 0, 0, 0};
+
+    float32x4_t va1, va2, va3, va4, vb1, vb2, vb3, vb4;
+    for (int n = 0; n < N - 3; n += 4)
+    {
+        va1 = vld1q_f32(aData + s_a * n);
+        vb1 = vld1q_f32(bData + s_b * n);
+        res1 = vfmaq_laneq_f32(res1, vb1, va1, 0);
+        res2 = vfmaq_laneq_f32(res2, vb1, va1, 1);
+        res3 = vfmaq_laneq_f32(res3, vb1, va1, 2);
+        res4 = vfmaq_laneq_f32(res4, vb1, va1, 3);
+
+        va2 = vld1q_f32(aData + s_a * (n + 1));
+        vb2 = vld1q_f32(bData + s_b * (n + 1));
+        res5 = vfmaq_laneq_f32(res5, vb2, va2, 0);
+        res6 = vfmaq_laneq_f32(res6, vb2, va2, 1);
+        res7 = vfmaq_laneq_f32(res7, vb2, va2, 2);
+        res8 = vfmaq_laneq_f32(res8, vb2, va2, 3);
+
+        va3 = vld1q_f32(aData + s_a * (n + 2));
+        vb3 = vld1q_f32(bData + s_b * (n + 2));
+        res9 = vfmaq_laneq_f32(res9, vb3, va3, 0);
+        res10 = vfmaq_laneq_f32(res10, vb3, va3, 1);
+        res11 = vfmaq_laneq_f32(res11, vb3, va3, 2);
+        res12 = vfmaq_laneq_f32(res12, vb3, va3, 3);
+
+        va4 = vld1q_f32(aData + s_a * (n + 3));
+        vb4 = vld1q_f32(bData + s_b * (n + 3));
+        res13 = vfmaq_laneq_f32(res13, vb4, va4, 0);
+        res14 = vfmaq_laneq_f32(res14, vb4, va4, 1);
+        res15 = vfmaq_laneq_f32(res15, vb4, va4, 2);
+        res16 = vfmaq_laneq_f32(res16, vb4, va4, 3);
+    }
+
+    for (int n = N - N % 4; n < N; n++)
+    {
+        va1 = vld1q_f32(aData + s_a * n);
+        vb1 = vld1q_f32(bData + s_b * n);
+        res1 = vfmaq_laneq_f32(res1, vb1, va1, 0);
+        res2 = vfmaq_laneq_f32(res2, vb1, va1, 1);
+        res3 = vfmaq_laneq_f32(res3, vb1, va1, 2);
+        res4 = vfmaq_laneq_f32(res4, vb1, va1, 3);
+    }
+
+    res1 = vaddq_f32(res1, res5);
+    res9 = vaddq_f32(res9, res13);
+    res2 = vaddq_f32(res2, res6);
+    res10 = vaddq_f32(res10, res14);
+    res3 = vaddq_f32(res3, res7);
+    res11 = vaddq_f32(res11, res15);
+    res4 = vaddq_f32(res4, res8);
+    res12 = vaddq_f32(res12, res16);
+    res1 = vaddq_f32(res1, res9);
+    res2 = vaddq_f32(res2, res10);
+    res3 = vaddq_f32(res3, res11);
+    res4 = vaddq_f32(res4, res12);
+
+    vst1q_f32(outData, res1);
+    vst1q_f32(outData + s_out, res2);
+    vst1q_f32(outData + 2 * s_out, res3);
+    vst1q_f32(outData + 3 * s_out, res4);
+}
+
+
+void matmul_4x4_micro_kernel_col_major(int N, float *aData, float *bData, float *outData, int s_a, int s_b, int s_out)
 {
     float32x4_t res1 = {0, 0, 0, 0};
     float32x4_t res2 = {0, 0, 0, 0};

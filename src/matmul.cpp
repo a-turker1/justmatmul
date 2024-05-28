@@ -21,7 +21,11 @@ void naive_matmul(Matrix &a, Matrix &b, Matrix &out)
     for (int n = 0; n < N; n += block_size)
     {
         int n_ = min(N - n, block_size);
-        naive_matmul_kernel(M, n_, K, aData , bData, outData, M, K, M);
+        if(a.is_row_major)
+            naive_matmul_row_major_kernel(M, n_, K, aData , bData, outData, M, K, M);
+        else
+            naive_matmul_col_major_kernel(M, n_, K, aData , bData, outData, M, K, M);
+
     }
 }
 
@@ -44,7 +48,10 @@ void matmul_4x4_neon(Matrix &a, Matrix &b_, Matrix &out)
         {
             for (int k = 0; k < K - 3; k += 4)
             {
-                matmul_4x4_micro_kernel_row_major(N, aData + m, bData + k, outData + m + ldo * k, lda, ldb, ldo);
+                if(a.is_row_major)
+                    matmul_4x4_micro_kernel_row_major(N, aData + m, bData + k, outData + m + ldo * k, lda, ldb, ldo);
+                else
+                    matmul_4x4_micro_kernel_row_major(N, aData + m, bData + k, outData + m + ldo * k, lda, ldb, ldo);
             }
         }
     };
@@ -77,7 +84,10 @@ void matmul_12x8_neon(Matrix &a, Matrix &b_, Matrix &out)
         {
             for (int k = 0; k < K - 7; k += 8)
             {
-                matmul_12x8_micro_kernel_col_major(N, aData + m, bData +  k, outData + m + ldo * k, lda, ldb, ldo);
+                if(a.is_row_major)
+                    matmul_12x8_micro_kernel_row_major(N, aData + m, bData +  k, outData + m + ldo * k, lda, ldb, ldo);
+                else
+                    matmul_12x8_micro_kernel_col_major(N, aData + m, bData +  k, outData + m + ldo * k, lda, ldb, ldo);
             }
         }
     };
@@ -85,19 +95,35 @@ void matmul_12x8_neon(Matrix &a, Matrix &b_, Matrix &out)
     for (int n = 0; n < N; n += block_size)
     {
         int n_ = min(N - n, block_size);
-        blocked_func(M, n_, K, aData + (M * n), M, bData + (K * n), K, outData, M);
+        int lda = a.is_row_major ? M : N;
+        int ldb = a.is_row_major ? K : N;
+        int ldout = a.is_row_major ? M : K;
+        blocked_func(M, n_, K, aData + (M * n), lda, bData + (K * n), ldb, outData, ldout);
     }
 }
 
-void matmul(Matrix &a, Matrix &b_, Matrix &out){
+void matmul(Matrix &a, Matrix &b, Matrix &out){
     int M = a.rows;
     int N = a.cols;
-    int K = b_.cols;
+    int K = b.cols;
+
+    // std::cout << "Before " << a << std::endl;
+    if (a.is_row_major)
+        a = a.transpose();
+    else
+        b = b.transpose();
+
+    // std::cout << "After " << a << std::endl;
+
+
     
-    auto b = b_.transpose();
     float *aData = a.data();
     float *bData = b.data();
     float *outData = out.data();
+
+    int lda = a.is_row_major ? M : N;
+    int ldb = a.is_row_major ? K : N;
+    int ldout = a.is_row_major ? M : K;
 
     auto matmul_12x8 = [&](int M, int N, int K, float *aData, int lda, float *bData, int ldb, float *outData, int ldo)
     {
@@ -105,7 +131,10 @@ void matmul(Matrix &a, Matrix &b_, Matrix &out){
         {
             for (int k = 0; k < K - 7; k += 8)
             {
-                matmul_12x8_micro_kernel_col_major(N, aData + m, bData +  k, outData + m + ldo * k, lda, ldb, ldo);
+                if(a.is_row_major)
+                    matmul_12x8_micro_kernel_row_major(N, aData + m, bData +  k, outData + m + ldo * k, lda, ldb, ldo);
+                else
+                    matmul_12x8_micro_kernel_col_major(N, aData + m, bData +  k, outData + m + ldo * k, lda, ldb, ldo);
             }
         }
     };
@@ -116,7 +145,11 @@ void matmul(Matrix &a, Matrix &b_, Matrix &out){
         {
             for (int k = 0; k < K - 3; k += 4)
             {
-                matmul_4x4_micro_kernel_row_major(N, aData + m, bData +  k, outData + m + ldo * k, lda, ldb, ldo);
+                if (a.is_row_major)
+                    matmul_4x4_micro_kernel_row_major(N, aData + m, bData +  k, outData + m + ldo * k, lda, ldb, ldo);
+                else
+                    matmul_4x4_micro_kernel_row_major(N, aData + m, bData +  k, outData + m + ldo * k, lda, ldb, ldo);
+
             }
         }
     };
@@ -124,13 +157,17 @@ void matmul(Matrix &a, Matrix &b_, Matrix &out){
 
     auto naive_matmul = [&](int M, int N, int K, float *aData, int lda, float *bData, int ldb, float *outData, int ldo)
     {
-        naive_matmul_kernel(M, N, K, aData, bData, outData, lda, ldb, ldo);
+        if(a.is_row_major)
+            naive_matmul_row_major_kernel(M, N, K, aData, bData, outData, lda, ldb, ldo);
+        else
+            naive_matmul_col_major_kernel(M, N, K, aData, bData, outData, lda, ldb, ldo);
+
     };
 
     for (int n = 0; n < N; n += 128)
     {
         int n_ = min(N - n, 128);
-        matmul_12x8(M, n_, K, aData + (M * n), M, bData + (K * n), K, outData, M);
+        matmul_12x8(M, n_, K, aData + (M * n), lda, bData + (K * n), ldb, outData, ldout);
     }
 
     int mleft = M % 12;
@@ -162,6 +199,4 @@ void matmul(Matrix &a, Matrix &b_, Matrix &out){
         int n_ = min(N - n, 128);
         naive_matmul(mleft, n_, K - kleft, aData + (M * n) + (M - mleft), M, bData + (K * n) , K, outData + M - mleft, M);
     }
-
-
 }

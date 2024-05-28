@@ -15,12 +15,12 @@ struct Function {
 
 int main()
 {
-
+    
     for (int i = 5; i < 300; i += 12)
     {
-        Matrix A(STEP_SIZE * i, STEP_SIZE * i);
-        Matrix B(STEP_SIZE * i, STEP_SIZE * i);
-        Matrix out(STEP_SIZE * i, STEP_SIZE * i);
+        Matrix A(STEP_SIZE * i, STEP_SIZE * i, true);
+        Matrix B(STEP_SIZE * i, STEP_SIZE * i, true);
+        Matrix out(STEP_SIZE * i, STEP_SIZE * i, true);
 
         auto gflops = calculate_gflops(A, B, out, matmul);
         std::cout << "Matrix size: " << STEP_SIZE *i <<"x" << STEP_SIZE *i << " Gflops: " << gflops << std::endl;
